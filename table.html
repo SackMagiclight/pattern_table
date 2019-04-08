@@ -1,0 +1,73 @@
+<html lang="en">
+    <head>
+        <title>Sack 差分表</title>
+        <meta name="bmstable" content="header.json" />
+
+        <!-- Tabulator -->
+        <link href="https://unpkg.com/tabulator-tables@4.2.4/dist/css/tabulator.min.css" rel="stylesheet" />
+        <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.2.4/dist/js/tabulator.min.js" ></script>
+    </head>
+    <body>
+        <div id="table"></div>
+    </body>
+
+    <script>
+        const request = new XMLHttpRequest();
+        request.onload = objs => {
+            const header = JSON.parse(request.responseText);
+            const table = new Tabulator("#table", {
+                height:"99%",
+                layout: "fitColumns",
+                groupBy: "level",
+                groupHeader: function(value, count, data, group){
+                    return `<span>${header.symbol}${value} (${count} pattern)</span>`;
+                },
+                columns: [
+                    { title: "Level", field: "level", width: 80, resizable: false,
+                        formatter: function(cell, formatterParams, onRendered) {
+                            return header.symbol + cell.getValue();
+                        },
+                    },
+                    { title: "Name", field: "title", headerSort:false, resizable: false, variableHeight:true,
+                        formatter: function(cell, formatterParams, onRendered) {
+                            cell.getElement().style.whiteSpace = "pre-wrap";
+                            const value = cell.getValue();
+                            const data = cell.getRow().getData();
+                            const md5 = data.md5;
+                            return `<a href="http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=ranking&bmsmd5=${md5}" target="_blank">${value}</a>`
+                        },
+                    },
+                    { title: "Artist", field: "artist", formatter:"textarea", minWidth: 100, headerSort:false, resizable: false,
+                        formatter: function(cell, formatterParams, onRendered) {
+                            cell.getElement().style.whiteSpace = "pre-wrap";
+                            const value = cell.getValue();
+                            const data = cell.getRow().getData();
+                            const url = data.url;
+                            if(url){
+                                return `<a href="${url}" target="_blank">${value}</a>`
+                            }
+                            return value;
+                        },
+                    },
+                    { title: "Pattern", field: "name_diff", formatter:"textarea", minWidth: 100, headerSort:false, resizable: false,
+                        formatter: function(cell, formatterParams, onRendered) {
+                            cell.getElement().style.whiteSpace = "pre-wrap";
+                            const value = cell.getValue();
+                            const data = cell.getRow().getData();
+                            const url = data.url_diff;
+                            if(url){
+                                return `<a href="${url}" target="_blank">${value}</a>`
+                            }
+                            return value;
+                        },
+                    },
+                    { title: "Comment", field: "comment", formatter:"textarea", headerSort:false, resizable: false },
+                ]
+            });
+
+            table.setData("./data.json");
+        };
+        request.open("get", "header.json", true);
+        request.send();
+    </script>
+</html>
