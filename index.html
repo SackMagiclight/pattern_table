@@ -16,6 +16,9 @@
         request.onload = objs => {
             const header = JSON.parse(request.responseText);
             const table = new Tabulator("#table", {
+                initialSort:[
+                    {column:"level", dir:"asc"}
+                ],
                 height:"99%",
                 layout: "fitColumns",
                 groupBy: "level",
@@ -23,9 +26,21 @@
                     return `<span>${header.symbol}${value} (${count} pattern)</span>`;
                 },
                 columns: [
-                    { title: "Level", field: "level", width: 80, resizable: false,
+                    { title: "Level", field: "level", sorter:"number", width: 80, resizable: false,
                         formatter: function(cell, formatterParams, onRendered) {
                             return header.symbol + cell.getValue();
+                        },
+                    },
+                    { title: "IR", field: "md5", width: 80, headerSort:false, resizable: false, variableHeight:true,
+                        formatter: function(cell, formatterParams, onRendered) {
+                            cell.getElement().style.whiteSpace = "pre-wrap";
+                            const value = cell.getValue();
+                            const data = cell.getRow().getData();
+                            const md5 = data.md5;
+                            const sha256 = data.sha256;
+                            return `[<a href="http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=ranking&bmsmd5=${md5}" target="_blank">LR2</a>] \
+                            [<a href="https://www.gaftalk.com/minir/#/viewer/song/${sha256}/0" target="_blank">MinIR</a>] \
+                            `
                         },
                     },
                     { title: "Name", field: "title", headerSort:false, resizable: false, variableHeight:true,
